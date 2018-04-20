@@ -181,8 +181,8 @@ class FactorVAE(object):
         dec_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
         disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='discriminator')
 
-        ae_train_step = tf.train.AdamOptimizer(learning_rate=10e-4).minimize(self.auto_encoder_loss, var_list=enc_vars+dec_vars)
-        disc_train_step = tf.train.AdamOptimizer(learning_rate=10e-4, beta1=0.5, beta2=0.9).minimize(-self.disc_loss, var_list=disc_vars)
+        ae_train_step = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(self.auto_encoder_loss, var_list=enc_vars+dec_vars)
+        disc_train_step = tf.train.AdamOptimizer(learning_rate=1e-4, beta1=0.5, beta2=0.9).minimize(-self.disc_loss, var_list=disc_vars)
 
         return ae_train_step, disc_train_step
 
