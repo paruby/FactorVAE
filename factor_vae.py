@@ -31,16 +31,19 @@ class FactorVAE(object):
                 recon_train_loss = self.sess.run(self.recon_loss, {self.input_ph: batch})
                 disc_train_loss = self.sess.run(self.disc_loss, {self.input_ph: batch})
                 print("Iteration %i: \n    Autoencoder loss (train) %f\n    Reconstruction loss (train) %f\n    Discriminator loss (train) %f" % (it, ae_train_loss, recon_train_loss, disc_train_loss), flush=True)
+                print("Iteration %i: \n    Autoencoder loss (train) %f\n    Reconstruction loss (train) %f\n    Discriminator loss (train) %f" % (it, ae_train_loss, recon_train_loss, disc_train_loss), flush=True, file=open('train.log','a'))
 
                 ae_test_loss = self.sess.run(self.auto_encoder_loss, {self.input_ph: self.data_test[0:500]})
                 recon_test_loss = self.sess.run(self.recon_loss, {self.input_ph: self.data_test[0:500]})
                 disc_test_loss = self.sess.run(self.disc_loss, {self.input_ph: self.data_test[0:500]})
                 print("    Autoencoder loss (test) %f\n    Reconstruction loss (test) %f\n    Discriminator loss (test) %f" % (ae_test_loss, recon_test_loss, disc_test_loss), flush=True)
+                print("    Autoencoder loss (test) %f\n    Reconstruction loss (test) %f\n    Discriminator loss (test) %f" % (ae_test_loss, recon_test_loss, disc_test_loss), flush=True, file=open('train.log','a'))
 
-            if it % 100000 == 0:
+            if it % 10000 == 0:
                 model_path = "checkpoints/model"
                 save_path = self.saver.save(self.sess, model_path, global_step=it)
                 print("Model saved to: %s" % save_path)
+                print("Model saved to: %s" % save_path, file=open('train.log','a'))
 
     def load_latest_checkpoint(self):
         self.saver.restore(self.sess, tf.train.latest_checkpoint('checkpoints'))
@@ -89,10 +92,10 @@ class FactorVAE(object):
 
     def _encoder_init(self, inputs):
         with tf.variable_scope("encoder"):
-            e_1 = tf.layers.conv2d(inputs=inputs, filters=32, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_1")
-            e_2 = tf.layers.conv2d(inputs=e_1, filters=32, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_2")
-            e_3 = tf.layers.conv2d(inputs=e_2, filters=64, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_3")
-            e_4 = tf.layers.conv2d(inputs=e_3, filters=64, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_4")
+            e_1 = tf.layers.conv2d(inputs=inputs, filters=32, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_1", padding="same")
+            e_2 = tf.layers.conv2d(inputs=e_1, filters=32, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_2", padding="same")
+            e_3 = tf.layers.conv2d(inputs=e_2, filters=64, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_3", padding="same")
+            e_4 = tf.layers.conv2d(inputs=e_3, filters=64, kernel_size=4, strides=2, activation=tf.nn.relu, name="e_4", padding="same")
             e_4_reshape = tf.reshape(e_4, shape=[-1] + [np.prod(e_4.get_shape().as_list()[1:])])
             e_5 = tf.layers.dense(inputs=e_4_reshape, units=128, name="e_5")
             e_mean = tf.layers.dense(inputs=e_5, units=self.z_dim, name="e_mean")
@@ -111,7 +114,7 @@ class FactorVAE(object):
             d_out = tf.layers.conv2d_transpose(inputs=d_4, filters=1, kernel_size=4, strides=2, name="d_out", reuse=reuse, padding="same")
             # In the FactorVAE paper, they say (Table 1) that they only use 3 "upconv" layers.
             # My code above deviates from that because I was getting d_out.shape=[?, 46, 46, 1]
-            # with only 3 layers and default padding="valid"
+            # with only 3 layers and default padding="valid", and [?, 32, 32, 1] with padding="same"
         return d_out
 
     def _discriminator_init(self, inputs, reuse=False):
