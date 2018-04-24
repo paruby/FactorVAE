@@ -1,6 +1,6 @@
 # FactorVAE
 
-An implementation of the FactorVAE algorithm from the paper
+A TensorFlow implementation of the FactorVAE algorithm from the paper
 
 Disentangling by Factorising (Kim & Mnih, 2018)
 https://arxiv.org/pdf/1802.05983.pdf
